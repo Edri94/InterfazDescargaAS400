@@ -1,0 +1,9 @@
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\bin\Debug\Consumir_InterfazDescargaAS400.exe.config
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\bin\Debug\Consumir_InterfazDescargaAS400.exe
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\bin\Debug\Consumir_InterfazDescargaAS400.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.csproj.AssemblyReference.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.Properties.Resources.resources
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.csproj.GenerateResource.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.csproj.CoreCompileInputs.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.exe
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.pdb
