@@ -46,6 +46,7 @@
     <Compile Include="Data\ConexionBD.cs" />
     <Compile Include="Helpers\Funcion.cs" />
     <Compile Include="Helpers\Log.cs" />
+    <Compile Include="Models\Hold_EQTKT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -7,3 +7,7 @@ C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS4
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.csproj.CoreCompileInputs.cache
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.exe
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\bin\Debug\InterfazDescargaAS400.dll
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\bin\Debug\InterfazDescargaAS400.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.Form1.resources
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\Consumir_InterfazDescargaAS400\obj\Debug\Consumir_InterfazDescargaAS400.csproj.CopyComplete
