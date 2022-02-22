@@ -15,14 +15,31 @@ namespace InterfazDescargaAS400.Data
         String path;
         List<DiccionarioDatos> limites;
         FuncionesBd bd;
-       
 
-        public ArchivoTexto(String path)
+        String equipo;
+        String libreria;
+        String archivo;
+        String usuario;
+        String psw;
+
+        String client_access = Funcion.getValueAppConfig("ClientAccess", "RUTAS");
+
+
+        public ArchivoTexto()
         {
-            this.path = path;
+            this.path = Funcion.getValueAppConfig("Archivo", "AS400"); 
             this.bd = new FuncionesBd();
             this.limites = new List<DiccionarioDatos>();
-            Log.EscribeLog = true;
+
+            Log.EscribeLog = (Funcion.getValueAppConfig("Escribe", "LOG") == "Si") ? true : false;
+
+            equipo = Funcion.getValueAppConfig("Equipo", "AS400");
+            libreria = Funcion.getValueAppConfig("Libreria", "AS400");
+            archivo = Funcion.getValueAppConfig("Archivo", "AS400");
+            usuario = Funcion.getValueAppConfig("Usuario", "AS400");
+            psw = Funcion.getValueAppConfig("PSW", "AS400");
+
+            client_access = Funcion.getValueAppConfig("ClientAccess", "RUTAS");
         }
 
         public string LeerArchivo()
@@ -39,10 +56,12 @@ namespace InterfazDescargaAS400.Data
             {
                 conectado = bd.ConectDB();
 
+                this.path = this.path.Replace("dd", DateTime.Now.ToString("dd"));
+
                 if (this.ExisteArchivo())
                 {
                     this.EstablecerLimites();
-
+                   
                     StreamReader sr = new StreamReader(path);
                     line = sr.ReadLine();
 

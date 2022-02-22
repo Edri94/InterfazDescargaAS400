@@ -22,7 +22,7 @@ namespace Consumir_InterfazDescargaAS400
 
         private void button1_Click(object sender, EventArgs e)
         {         
-            ArchivoTexto archivo = new ArchivoTexto("JUPFH.TXT");
+            ArchivoTexto archivo = new ArchivoTexto();
             archivo.LeerArchivo();
         }
 
