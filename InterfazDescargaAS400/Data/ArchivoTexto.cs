@@ -15,6 +15,7 @@ namespace InterfazDescargaAS400.Data
         String path;
         List<DiccionarioDatos> limites;
         FuncionesBd bd;
+        Encriptacion encriptacion;
 
         String equipo;
         String libreria;
@@ -30,16 +31,17 @@ namespace InterfazDescargaAS400.Data
             this.path = Funcion.getValueAppConfig("Archivo", "AS400"); 
             this.bd = new FuncionesBd();
             this.limites = new List<DiccionarioDatos>();
+            this.encriptacion = new Encriptacion();
 
             Log.EscribeLog = (Funcion.getValueAppConfig("Escribe", "LOG") == "Si") ? true : false;
 
-            equipo = Funcion.getValueAppConfig("Equipo", "AS400");
-            libreria = Funcion.getValueAppConfig("Libreria", "AS400");
+            equipo = encriptacion.Decrypt(Funcion.getValueAppConfig("Equipo", "AS400"));
+            libreria = encriptacion.Decrypt(Funcion.getValueAppConfig("Libreria", "AS400"));
             archivo = Funcion.getValueAppConfig("Archivo", "AS400");
-            usuario = Funcion.getValueAppConfig("Usuario", "AS400");
-            psw = Funcion.getValueAppConfig("PSW", "AS400");
+            usuario = encriptacion.Decrypt(Funcion.getValueAppConfig("Usuario", "AS400"));
+            psw = encriptacion.Decrypt(Funcion.getValueAppConfig("PSW", "AS400"));
 
-            client_access = Funcion.getValueAppConfig("ClientAccess", "RUTAS");
+            client_access = encriptacion.Decrypt(Funcion.getValueAppConfig("ClientAccess", "RUTAS"));
         }
 
         public string LeerArchivo()
@@ -110,10 +112,6 @@ namespace InterfazDescargaAS400.Data
             {
                 foreach (DiccionarioDatos diccionario in limites)
                 {       
-                    if(c==17)
-                    {
-                        String break_point ="bp";
-                    }
                     if (diccionario.TipoDato == "varchar")
                     {                     
                         if (c == (limites.Count - 1))

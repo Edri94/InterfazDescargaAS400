@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using InterfazDescargaAS400.Data;
+using InterfazDescargaAS400.Helpers;
 
 namespace Consumir_InterfazDescargaAS400
 {
@@ -29,6 +30,56 @@ namespace Consumir_InterfazDescargaAS400
         private void btnBorrar_Click(object sender, EventArgs e)
         {
             textBox1.Text = String.Empty;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnEnviar_Click(object sender, EventArgs e)
+        {    
+            Encriptacion encriptacion = new Encriptacion();
+
+            if(txtCadena.Text != String.Empty)
+            {
+                if(rbEncriptar.Checked == true)
+                {
+                    txtResultado.Text = encriptacion.Encrypt(txtCadena.Text);
+                }
+                if(rbDesencriptar.Checked == true)
+                {
+                    txtResultado.Text = encriptacion.Decrypt(txtCadena.Text);
+                }
+            }
+        }
+
+        private void rbEncriptar_CheckedChanged(object sender, EventArgs e)
+        {
+            if(rbEncriptar.Checked == true)
+            {
+                rbDesencriptar.Checked = false;
+            }
+            else
+            {
+                rbDesencriptar.Checked = true;
+            }
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            txtResultado.Text = String.Empty;
+            txtCadena.Text = String.Empty;
+        }
+
+        private void btnCopiar_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetDataObject(txtResultado.Text, true);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            rbEncriptar.Checked = true;
         }
     }
 }
