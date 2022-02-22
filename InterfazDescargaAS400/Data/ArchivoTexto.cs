@@ -2,6 +2,7 @@
 using InterfazDescargaAS400.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,36 +31,41 @@ namespace InterfazDescargaAS400.Data
             String lines = "";
             String query = "";
             int c = 0;
-        
+            bool conectado;
+
+
 
             try
             {
+                conectado = bd.ConectDB();
+
                 if (this.ExisteArchivo())
                 {
                     this.EstablecerLimites();
 
                     StreamReader sr = new StreamReader(path);
                     line = sr.ReadLine();
-                    
-                    while (line != null)
-                    {                      
-                        if (line.Substring(4,1) != "9" && line.Substring(4, 1) != "8")
-                        {                        
-                            lines = lines + line;
 
-                            query = ArmaQueryInsert(line);
+                    if (conectado)
+                    {
+                        bd.ejecutarDelete("delete from TMP_HOLDS_EQTKT where 1 = 1");
 
-                            if(bd.ConectDB())
+                        while (line != null)
+                        {
+                            if (line.Substring(4, 1) != "9" && line.Substring(4, 1) != "8")
                             {
+                                lines = lines + line;
+
+                                query = ArmaQueryInsert(line);
                                 bd.ejecutarInsert(query);
                             }
-
+                            line = sr.ReadLine();  
                            
+                            c++;
+
                         }
-                        line = sr.ReadLine();
-                        c++;
+                        sr.Close();
                     }
-                    sr.Close();
                 }           
             }
             catch(Exception ex)
@@ -76,6 +82,7 @@ namespace InterfazDescargaAS400.Data
             int start_index = 0, c = 0;
             String query_completo = "", query_etiquetas = "", query_values = "";
             Hold_EQTKT hold_EQTKT = new Hold_EQTKT();
+            String fecha_out ="";
 
             query_completo = "INSERT INTO TMP_HOLDS_EQTKT";
 
@@ -83,7 +90,11 @@ namespace InterfazDescargaAS400.Data
             try
             {
                 foreach (DiccionarioDatos diccionario in limites)
-                {              
+                {       
+                    if(c==17)
+                    {
+                        String break_point ="bp";
+                    }
                     if (diccionario.TipoDato == "varchar")
                     {                     
                         if (c == (limites.Count - 1))
@@ -91,7 +102,7 @@ namespace InterfazDescargaAS400.Data
                             query_etiquetas += diccionario.Etiqueta;
                             //query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "'";
 
-                            var fecha_out = line.Substring(start_index, diccionario.Posicion);
+                            fecha_out = line.Substring(start_index, diccionario.Posicion);
                             fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
                             query_values += " '" + fecha_out + "'";
                         }
@@ -101,7 +112,7 @@ namespace InterfazDescargaAS400.Data
 
                             if (diccionario.Etiqueta == "START_DATE" || diccionario.Etiqueta == "EXPIRY_DATE")
                             {
-                                var fecha_out = line.Substring(start_index, diccionario.Posicion);
+                                fecha_out = line.Substring(start_index, diccionario.Posicion);
                                 fecha_out = "20" + fecha_out.Substring(1,2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
                                 query_values += " '" + fecha_out + "',";
                             }

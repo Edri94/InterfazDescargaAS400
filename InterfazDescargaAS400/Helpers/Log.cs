@@ -55,12 +55,10 @@ namespace InterfazDescargaAS400.Helpers
 
             string clase = caller.ReflectedType.Name;
             string funcion = caller.Name;
+            string vData = "";
             //clase = "";
 
-            string vData;
-            string seccion = "escribeArchivoLOG";
-            string nombre_archivo = DateTime.Now.ToString("ddMMyyyy") + "-" + Funcion.getValueAppConfig("logFileName", seccion);
-            nombre_archivo = nombre_archivo.Replace("@clase", clase);
+            string nombre_archivo = DateTime.Now.ToString("ddMMyyyy") + "-" + clase + ".log";
 
             if (EscribeLog)
             {

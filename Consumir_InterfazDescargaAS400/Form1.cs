@@ -14,18 +14,15 @@ namespace Consumir_InterfazDescargaAS400
 {
     public partial class Form1 : Form
     {
-        ArchivoTexto archivo;
+        
         public Form1()
         {
             InitializeComponent();
-            archivo = new ArchivoTexto("JUPFH.TXT");
-
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {
-            String resultado = archivo.ExisteArchivo() ? "existe" : "no existe";
-
+        {         
+            ArchivoTexto archivo = new ArchivoTexto("JUPFH.TXT");
             archivo.LeerArchivo();
         }
 

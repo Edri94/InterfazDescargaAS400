@@ -75,5 +75,25 @@ namespace InterfazDescargaAS400.Data
                 return -1;
             }
         }
+
+        public int ejecutarDelete(string query)
+        {
+            try
+            {
+                cnnConexion.ActiveConnection = true;
+                cnnConexion.ParametersContains = false;
+                cnnConexion.CommandType = CommandType.Text;
+                cnnConexion.ActiveConnection = true;
+
+                int afectados = cnnConexion.ExecuteNonQuery(query);
+
+                return afectados;
+            }
+            catch (Exception ex)
+            {
+                Log.Escribe(ex);
+                return -1;
+            }
+        }
     }
 }
