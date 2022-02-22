@@ -44,8 +44,11 @@
   <ItemGroup>
     <Compile Include="Data\ArchivoTexto.cs" />
     <Compile Include="Data\ConexionBD.cs" />
+    <Compile Include="Data\FuncionesBd.cs" />
+    <Compile Include="Helpers\Encriptacion.cs" />
     <Compile Include="Helpers\Funcion.cs" />
     <Compile Include="Helpers\Log.cs" />
+    <Compile Include="Models\DiccionarioDatos.cs" />
     <Compile Include="Models\Hold_EQTKT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -26,8 +26,7 @@ namespace Consumir_InterfazDescargaAS400
         {
             String resultado = archivo.ExisteArchivo() ? "existe" : "no existe";
 
-            textBox1.Text = archivo.LeerArchivo();
-            archivo.EstablecerLimites();
+            archivo.LeerArchivo();
         }
 
         private void btnBorrar_Click(object sender, EventArgs e)
