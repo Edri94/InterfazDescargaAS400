@@ -1,0 +1,9 @@
+[23-02-2022 12:17:43] *Error desde button1_Click:  startIndex no puede ser mayor que la longitud de la cadena.
+Nombre del parámetro: startIndex *InnerException:  *Source: mscorlib  *Data: System.Collections.ListDictionaryInternal  *HelpLink:   *StackTrace:    en System.String.Substring(Int32 startIndex, Int32 length)
+   en InterfazDescargaAS400.Data.ArchivoTexto.LeerArchivo() en C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\Data\ArchivoTexto.cs:línea 83  *HResult: -2146233086  *TargetSite: System.String Substring(Int32, Int32)  
+[23-02-2022 12:36:42] *Error desde button1_Click:  startIndex no puede ser mayor que la longitud de la cadena.
+Nombre del parámetro: startIndex *InnerException:  *Source: mscorlib  *Data: System.Collections.ListDictionaryInternal  *HelpLink:   *StackTrace:    en System.String.Substring(Int32 startIndex, Int32 length)
+   en InterfazDescargaAS400.Data.ArchivoTexto.LeerArchivo() en C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\Data\ArchivoTexto.cs:línea 84  *HResult: -2146233086  *TargetSite: System.String Substring(Int32, Int32)  
+[23-02-2022 12:37:54] *Error desde button1_Click:  startIndex no puede ser mayor que la longitud de la cadena.
+Nombre del parámetro: startIndex *InnerException:  *Source: mscorlib  *Data: System.Collections.ListDictionaryInternal  *HelpLink:   *StackTrace:    en System.String.Substring(Int32 startIndex, Int32 length)
+   en InterfazDescargaAS400.Data.ArchivoTexto.LeerArchivo() en C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\Data\ArchivoTexto.cs:línea 84  *HResult: -2146233086  *TargetSite: System.String Substring(Int32, Int32)  

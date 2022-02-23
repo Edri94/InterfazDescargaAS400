@@ -2,58 +2,28 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace InterfazDescargaAS400.Data
 {
-    public class FuncionesBd
-    {
-
-        public string gsPswdDB;
-        public string gsUserDB;
-        public string gsNameDB;
-        public string gsCataDB;
-        public string gsDSNDB;
-        public string gsSrvr;
-
+    public class FuncionesBd : ConexionBD
+    { 
         public ConexionBD cnnConexion;
+        SqlConnection connection;
+        String connectionString;
 
         Encriptacion encriptacion;
 
-        public FuncionesBd()
+        public FuncionesBd(string cnn) : base(cnn)
         {
             encriptacion = new Encriptacion();
-        }
+            cnnConexion = new ConexionBD(cnn);
+            this.connectionString = cnn;
 
-        public bool ConectDB()
-        {
-            bool ConectDB = false;
-            string section = "conexion";
-            try
-            {
-                string a = Funcion.getValueAppConfig("DBCata", section);
-                this.gsCataDB = encriptacion.Decrypt(a);
-                this.gsDSNDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBDSN", section));
-                this.gsSrvr = encriptacion.Decrypt(Funcion.getValueAppConfig("DBSrvr", section));
-                this.gsUserDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBUser", section));
-                this.gsPswdDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBPswd", section));
-                this.gsNameDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBName", section));
 
-                string conn_str = $"Data source ={this.gsSrvr}; uid ={this.gsUserDB}; PWD ={this.gsPswdDB}; initial catalog = {this.gsNameDB}";
-                this.cnnConexion = new ConexionBD(conn_str);
-
-                ConectDB = true;
-
-                return ConectDB;
-
-            }
-            catch (Exception ex)
-            {
-                Log.Escribe(ex, "Error");
-            }
-            return ConectDB;
         }
 
         public int ejecutarInsert(string query)
@@ -94,6 +64,53 @@ namespace InterfazDescargaAS400.Data
                 Log.Escribe(ex);
                 return -1;
             }
+        }
+
+
+        public int transaccionInsert(List<String> querys)
+        {
+            using (SqlConnection connection = new SqlConnection(this.connectionString))
+            {
+                connection.Open();
+
+                SqlCommand command = connection.CreateCommand();
+                SqlTransaction transaction;
+
+                transaction = connection.BeginTransaction("transaccionInsert");
+
+                command.Connection = connection;
+                command.Transaction = transaction;
+
+                try
+                {
+
+                    foreach (String query in querys)
+                    {
+                        command.CommandText = query;
+                        command.ExecuteNonQuery();
+
+                    }
+
+                    transaction.Commit();
+                    Log.Escribe("records are written to database.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Escribe("Commit Exception");
+                    Log.Escribe(ex);
+                    try
+                    {
+                        transaction.Rollback();
+                    }
+                    catch (Exception ex2)
+                    {
+                        Log.Escribe("Rollback Exception");
+                        Log.Escribe(ex2);
+                    }
+                }
+            }
+
+            return 1;
         }
     }
 }

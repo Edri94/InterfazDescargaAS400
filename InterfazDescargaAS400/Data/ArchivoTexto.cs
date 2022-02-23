@@ -16,6 +16,7 @@ namespace InterfazDescargaAS400.Data
         List<DiccionarioDatos> limites;
         FuncionesBd bd;
         Encriptacion encriptacion;
+        List<String> querys;
 
         String equipo;
         String libreria;
@@ -23,16 +24,25 @@ namespace InterfazDescargaAS400.Data
         String usuario;
         String psw;
 
+
+        public string gsPswdDB;
+        public string gsUserDB;
+        public string gsNameDB;
+        public string gsCataDB;
+        public string gsDSNDB;
+        public string gsSrvr;
+
+        bool conectado = false;
+
         String client_access = Funcion.getValueAppConfig("ClientAccess", "RUTAS");
 
 
         public ArchivoTexto()
         {
-            this.path = Funcion.getValueAppConfig("Archivo", "AS400"); 
-            this.bd = new FuncionesBd();
+            this.path = Funcion.getValueAppConfig("Archivo", "AS400");
             this.limites = new List<DiccionarioDatos>();
             this.encriptacion = new Encriptacion();
-
+            this.querys = new List<string>();
             Log.EscribeLog = (Funcion.getValueAppConfig("Escribe", "LOG") == "Si") ? true : false;
 
             equipo = encriptacion.Decrypt(Funcion.getValueAppConfig("Equipo", "AS400"));
@@ -42,6 +52,8 @@ namespace InterfazDescargaAS400.Data
             psw = encriptacion.Decrypt(Funcion.getValueAppConfig("PSW", "AS400"));
 
             client_access = encriptacion.Decrypt(Funcion.getValueAppConfig("ClientAccess", "RUTAS"));
+
+            this.ConectDB();
         }
 
         public string LeerArchivo()
@@ -50,13 +62,9 @@ namespace InterfazDescargaAS400.Data
             String lines = "";
             String query = "";
             int c = 0;
-            bool conectado;
-
-
 
             try
             {
-                conectado = bd.ConectDB();
 
                 this.path = this.path.Replace("dd", DateTime.Now.ToString("dd"));
 
@@ -67,18 +75,19 @@ namespace InterfazDescargaAS400.Data
                     StreamReader sr = new StreamReader(path);
                     line = sr.ReadLine();
 
-                    if (conectado)
+                    if (this.conectado)
                     {
                         bd.ejecutarDelete("delete from TMP_HOLDS_EQTKT where 1 = 1");
 
                         while (line != null)
                         {
+                            if(line.Length < 232)
+                            {
+                                break;
+                            }
                             if (line.Substring(4, 1) != "9" && line.Substring(4, 1) != "8")
                             {
-                                lines = lines + line;
-
-                                query = ArmaQueryInsert(line);
-                                bd.ejecutarInsert(query);
+                                querys.Add(ArmaQueryInsert(line, c));                             
                             }
                             line = sr.ReadLine();  
                            
@@ -87,18 +96,24 @@ namespace InterfazDescargaAS400.Data
                         }
                         sr.Close();
                     }
-                }           
+                }
+                if(this.ConectDB())
+                {
+                    bd.transaccionInsert(querys);
+                }
+                
             }
             catch(Exception ex)
             {
                 Log.Escribe(ex);
+                Log.Escribe("error en la linea: " + c);
             }
             
 
             return lines;
         }
 
-        private string ArmaQueryInsert(string line)
+        private string ArmaQueryInsert(string line, int contador)
         {
             int start_index = 0, c = 0;
             String query_completo = "", query_etiquetas = "", query_values = "";
@@ -106,7 +121,6 @@ namespace InterfazDescargaAS400.Data
             String fecha_out ="";
 
             query_completo = "INSERT INTO TMP_HOLDS_EQTKT";
-
 
             try
             {
@@ -212,7 +226,38 @@ namespace InterfazDescargaAS400.Data
             }
         }
 
-        
+        public bool ConectDB()
+        {
+            bool ConectDB = false;
+            string section = "conexion";
+            try
+            {
+                string a = Funcion.getValueAppConfig("DBCata", section);
+                this.gsCataDB = encriptacion.Decrypt(a);
+                this.gsDSNDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBDSN", section));
+                this.gsSrvr = encriptacion.Decrypt(Funcion.getValueAppConfig("DBSrvr", section));
+                this.gsUserDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBUser", section));
+                this.gsPswdDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBPswd", section));
+                this.gsNameDB = encriptacion.Decrypt(Funcion.getValueAppConfig("DBName", section));
+
+                string conn_str = $"Data source ={this.gsSrvr}; uid ={this.gsUserDB}; PWD ={this.gsPswdDB}; initial catalog = {this.gsNameDB}";
+                this.bd = new FuncionesBd(conn_str);
+
+                ConectDB = true;
+                conectado = true;
+
+
+            }
+            catch (Exception ex)
+            {
+                ConectDB = false;
+                conectado = false;
+                Log.Escribe(ex, "Error");
+            }
+            return ConectDB;
+        }
+
+
 
 
     }

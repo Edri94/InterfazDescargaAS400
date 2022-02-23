@@ -12,7 +12,7 @@ namespace InterfazDescargaAS400.Data
     {
         #region FIELDS
 
-        private SqlConnection sqlCnn;
+        protected SqlConnection sqlCnn;
         private CommandType commandType = CommandType.StoredProcedure;
         private SqlCommand cmd;
         private SqlDataReader dReader;
