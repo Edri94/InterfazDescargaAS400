@@ -72,5 +72,34 @@ namespace InterfazDescargaAS400.Helpers
             }
 
         }
+
+        public static bool SetParameterTransfer(string key, string value, string archivo, string ruta_archivo)
+        {
+            try
+            {
+                string appPath = ruta_archivo + archivo;
+
+                if (File.Exists(appPath))
+                {
+                    string buscar = $"{key}="; 
+                    string remplazar = $"{key}={value}";
+                    string text = File.ReadAllText(appPath).Replace(buscar, remplazar); 
+                    File.WriteAllText(appPath, text);
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.Escribe(ex);
+                return false;
+            }
+
+        }
     }
 }

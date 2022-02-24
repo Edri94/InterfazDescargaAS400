@@ -34,15 +34,16 @@ namespace Consumir_InterfazDescargaAS400
             this.btnBorrar = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.txtCadena = new System.Windows.Forms.TextBox();
-            this.txtResultado = new System.Windows.Forms.TextBox();
-            this.btnEnviar = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.rbEncriptar = new System.Windows.Forms.RadioButton();
-            this.rbDesencriptar = new System.Windows.Forms.RadioButton();
-            this.btnReset = new System.Windows.Forms.Button();
             this.btnCopiar = new System.Windows.Forms.Button();
+            this.rbDesencriptar = new System.Windows.Forms.RadioButton();
+            this.rbEncriptar = new System.Windows.Forms.RadioButton();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnEnviar = new System.Windows.Forms.Button();
+            this.txtResultado = new System.Windows.Forms.TextBox();
+            this.txtCadena = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -77,6 +78,7 @@ namespace Consumir_InterfazDescargaAS400
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Controls.Add(this.btnLeer);
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.Controls.Add(this.btnBorrar);
@@ -105,51 +107,26 @@ namespace Consumir_InterfazDescargaAS400
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Encriptador";
             // 
-            // txtCadena
+            // btnCopiar
             // 
-            this.txtCadena.Location = new System.Drawing.Point(27, 75);
-            this.txtCadena.Name = "txtCadena";
-            this.txtCadena.Size = new System.Drawing.Size(322, 26);
-            this.txtCadena.TabIndex = 0;
+            this.btnCopiar.Location = new System.Drawing.Point(705, 158);
+            this.btnCopiar.Name = "btnCopiar";
+            this.btnCopiar.Size = new System.Drawing.Size(96, 45);
+            this.btnCopiar.TabIndex = 4;
+            this.btnCopiar.Text = "Copiar";
+            this.btnCopiar.UseVisualStyleBackColor = true;
+            this.btnCopiar.Click += new System.EventHandler(this.btnCopiar_Click);
             // 
-            // txtResultado
+            // rbDesencriptar
             // 
-            this.txtResultado.Location = new System.Drawing.Point(437, 75);
-            this.txtResultado.Multiline = true;
-            this.txtResultado.Name = "txtResultado";
-            this.txtResultado.ReadOnly = true;
-            this.txtResultado.Size = new System.Drawing.Size(364, 56);
-            this.txtResultado.TabIndex = 0;
-            // 
-            // btnEnviar
-            // 
-            this.btnEnviar.Location = new System.Drawing.Point(27, 146);
-            this.btnEnviar.Name = "btnEnviar";
-            this.btnEnviar.Size = new System.Drawing.Size(149, 57);
-            this.btnEnviar.TabIndex = 1;
-            this.btnEnviar.Text = "Enviar";
-            this.btnEnviar.UseVisualStyleBackColor = true;
-            this.btnEnviar.Click += new System.EventHandler(this.btnEnviar_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(23, 36);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(176, 20);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Encriptar / Desencriptar";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(442, 36);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 20);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Resultado";
-            this.label2.Click += new System.EventHandler(this.label1_Click);
+            this.rbDesencriptar.AutoSize = true;
+            this.rbDesencriptar.Location = new System.Drawing.Point(437, 179);
+            this.rbDesencriptar.Name = "rbDesencriptar";
+            this.rbDesencriptar.Size = new System.Drawing.Size(125, 24);
+            this.rbDesencriptar.TabIndex = 3;
+            this.rbDesencriptar.TabStop = true;
+            this.rbDesencriptar.Text = "Desencriptar";
+            this.rbDesencriptar.UseVisualStyleBackColor = true;
             // 
             // rbEncriptar
             // 
@@ -163,16 +140,25 @@ namespace Consumir_InterfazDescargaAS400
             this.rbEncriptar.UseVisualStyleBackColor = true;
             this.rbEncriptar.CheckedChanged += new System.EventHandler(this.rbEncriptar_CheckedChanged);
             // 
-            // rbDesencriptar
+            // label2
             // 
-            this.rbDesencriptar.AutoSize = true;
-            this.rbDesencriptar.Location = new System.Drawing.Point(437, 179);
-            this.rbDesencriptar.Name = "rbDesencriptar";
-            this.rbDesencriptar.Size = new System.Drawing.Size(125, 24);
-            this.rbDesencriptar.TabIndex = 3;
-            this.rbDesencriptar.TabStop = true;
-            this.rbDesencriptar.Text = "Desencriptar";
-            this.rbDesencriptar.UseVisualStyleBackColor = true;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(442, 36);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(82, 20);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Resultado";
+            this.label2.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(23, 36);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(176, 20);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Encriptar / Desencriptar";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // btnReset
             // 
@@ -184,21 +170,47 @@ namespace Consumir_InterfazDescargaAS400
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
-            // btnCopiar
+            // btnEnviar
             // 
-            this.btnCopiar.Location = new System.Drawing.Point(705, 158);
-            this.btnCopiar.Name = "btnCopiar";
-            this.btnCopiar.Size = new System.Drawing.Size(96, 45);
-            this.btnCopiar.TabIndex = 4;
-            this.btnCopiar.Text = "Copiar";
-            this.btnCopiar.UseVisualStyleBackColor = true;
-            this.btnCopiar.Click += new System.EventHandler(this.btnCopiar_Click);
+            this.btnEnviar.Location = new System.Drawing.Point(27, 146);
+            this.btnEnviar.Name = "btnEnviar";
+            this.btnEnviar.Size = new System.Drawing.Size(149, 57);
+            this.btnEnviar.TabIndex = 1;
+            this.btnEnviar.Text = "Enviar";
+            this.btnEnviar.UseVisualStyleBackColor = true;
+            this.btnEnviar.Click += new System.EventHandler(this.btnEnviar_Click);
+            // 
+            // txtResultado
+            // 
+            this.txtResultado.Location = new System.Drawing.Point(437, 75);
+            this.txtResultado.Multiline = true;
+            this.txtResultado.Name = "txtResultado";
+            this.txtResultado.ReadOnly = true;
+            this.txtResultado.Size = new System.Drawing.Size(364, 56);
+            this.txtResultado.TabIndex = 0;
+            // 
+            // txtCadena
+            // 
+            this.txtCadena.Location = new System.Drawing.Point(27, 75);
+            this.txtCadena.Name = "txtCadena";
+            this.txtCadena.Size = new System.Drawing.Size(322, 26);
+            this.txtCadena.TabIndex = 0;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(248, 187);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(130, 57);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+           
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(881, 587);
+            this.ClientSize = new System.Drawing.Size(895, 587);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "Form1";
@@ -228,6 +240,7 @@ namespace Consumir_InterfazDescargaAS400
         private System.Windows.Forms.RadioButton rbEncriptar;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnCopiar;
+        private System.Windows.Forms.Button button1;
     }
 }
 

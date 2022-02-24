@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -81,5 +82,7 @@ namespace Consumir_InterfazDescargaAS400
         {
             rbEncriptar.Checked = true;
         }
+
+      
     }
 }

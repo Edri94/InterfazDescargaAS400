@@ -3,6 +3,7 @@ using InterfazDescargaAS400.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace InterfazDescargaAS400.Data
     public class ArchivoTexto
     {
         String path;
+        String archivo_as400;
+        String archivo_holds;
         List<DiccionarioDatos> limites;
         FuncionesBd bd;
         Encriptacion encriptacion;
@@ -34,12 +37,18 @@ namespace InterfazDescargaAS400.Data
 
         bool conectado = false;
 
-        String client_access = Funcion.getValueAppConfig("ClientAccess", "RUTAS");
+        String client_access;
+        String PathModelos;
+        String PathTransfer;
+        String PathDatos;
+        String ArchivoFDF;
+        String ArchivoDTF;
 
 
         public ArchivoTexto()
         {
-            this.path = Funcion.getValueAppConfig("Archivo", "AS400");
+            this.path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location); 
+            this.archivo_as400 = Funcion.getValueAppConfig("Archivo", "AS400");
             this.limites = new List<DiccionarioDatos>();
             this.encriptacion = new Encriptacion();
             this.querys = new List<string>();
@@ -51,28 +60,61 @@ namespace InterfazDescargaAS400.Data
             usuario = encriptacion.Decrypt(Funcion.getValueAppConfig("Usuario", "AS400"));
             psw = encriptacion.Decrypt(Funcion.getValueAppConfig("PSW", "AS400"));
 
-            client_access = encriptacion.Decrypt(Funcion.getValueAppConfig("ClientAccess", "RUTAS"));
+            client_access =Funcion.getValueAppConfig("ClientAccess", "RUTAS");
+            PathModelos = Funcion.getValueAppConfig("PathModelos", "RUTAS");
+            PathTransfer = Funcion.getValueAppConfig("PathTransfer", "RUTAS");
+            PathDatos = Funcion.getValueAppConfig("PathDatos", "RUTAS");
+            ArchivoFDF = Funcion.getValueAppConfig("ArchivoFDF", "RUTAS");
+            ArchivoDTF = Funcion.getValueAppConfig("ArchivoDTF", "RUTAS");
+            descargaArchivoHolds();
 
             this.ConectDB();
+        }
+
+        private void descargaArchivoHolds()
+        {
+            this.archivo_as400 = this.archivo_as400.Replace("dd", DateTime.Now.ToString("dd"));
+            String nombreArchivo = this.path + "\\" + this.archivo_as400;
+
+            String nombreArchivoDtf = this.PathModelos + this.ArchivoDTF;
+            String nombreArchivoDtfDestino = this.PathTransfer + "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".DTF";
+            String archivoDtfDestino =  "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".DTF";
+
+
+            String nombreArchivoFDF = this.PathModelos + this.ArchivoFDF;
+            String nombreArchivoFDFDestino = this.PathTransfer + "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".FDF";
+            String archivoFDFDestino = "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".FDF";
+
+            File.Copy(nombreArchivoDtf, nombreArchivoDtfDestino, true);
+            File.Copy(nombreArchivoFDF, nombreArchivoFDFDestino, true);
+
+            this.archivo_holds = $"{this.PathDatos}{this.archivo_as400}.TXT";
+
+            Funcion.SetParameterTransfer("HostFile", $"{libreria}/{this.archivo_as400}", archivoDtfDestino, this.PathTransfer);
+            Funcion.SetParameterTransfer("FDFFile", nombreArchivoFDFDestino, archivoDtfDestino, this.PathTransfer);
+            Funcion.SetParameterTransfer("PCFile", this.archivo_holds, archivoDtfDestino, this.PathTransfer);
+
+            //lnAnswer = Shell(Trim(msPathFTPApp) & "\cwbtf.exe " & Trim(nombreArchivoDttDestino))
+
+            string command = $"/C {client_access}cwbtf.exe {nombreArchivoDtfDestino}";
+            Process.Start("cmd.exe", command);
+
         }
 
         public string LeerArchivo()
         {
             String line;
             String lines = "";
-            String query = "";
+
             int c = 0;
 
             try
             {
-
-                this.path = this.path.Replace("dd", DateTime.Now.ToString("dd"));
-
                 if (this.ExisteArchivo())
                 {
                     this.EstablecerLimites();
                    
-                    StreamReader sr = new StreamReader(path);
+                    StreamReader sr = new StreamReader(this.archivo_holds);
                     line = sr.ReadLine();
 
                     if (this.conectado)
@@ -204,7 +246,7 @@ namespace InterfazDescargaAS400.Data
 
             try
             {
-                existe = File.Exists(path);
+                existe = File.Exists(this.archivo_holds);
             }
             catch (Exception ex)
             {
