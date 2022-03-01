@@ -43,7 +43,6 @@ namespace Consumir_InterfazDescargaAS400
             this.btnEnviar = new System.Windows.Forms.Button();
             this.txtResultado = new System.Windows.Forms.TextBox();
             this.txtCadena = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -68,7 +67,7 @@ namespace Consumir_InterfazDescargaAS400
             // 
             // btnBorrar
             // 
-            this.btnBorrar.Location = new System.Drawing.Point(475, 187);
+            this.btnBorrar.Location = new System.Drawing.Point(27, 187);
             this.btnBorrar.Name = "btnBorrar";
             this.btnBorrar.Size = new System.Drawing.Size(148, 57);
             this.btnBorrar.TabIndex = 2;
@@ -78,7 +77,6 @@ namespace Consumir_InterfazDescargaAS400
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Controls.Add(this.btnLeer);
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.Controls.Add(this.btnBorrar);
@@ -196,16 +194,6 @@ namespace Consumir_InterfazDescargaAS400
             this.txtCadena.Size = new System.Drawing.Size(322, 26);
             this.txtCadena.TabIndex = 0;
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(248, 187);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(130, 57);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-           
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -240,7 +228,6 @@ namespace Consumir_InterfazDescargaAS400
         private System.Windows.Forms.RadioButton rbEncriptar;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnCopiar;
-        private System.Windows.Forms.Button button1;
     }
 }
 

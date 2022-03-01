@@ -86,7 +86,7 @@ namespace InterfazDescargaAS400.Data
 
                     foreach (String query in querys)
                     {
-                        command.CommandText = query;
+                        command.CommandText = query;Log.Escribe(query, "Query:");
                         command.ExecuteNonQuery();
 
                     }
@@ -112,5 +112,27 @@ namespace InterfazDescargaAS400.Data
 
             return 1;
         }
+
+        public SqlDataReader ejecutarConsulta(string query)
+        {
+            try
+            {
+                cnnConexion.ActiveConnection = true;
+                cnnConexion.ParametersContains = false;
+                cnnConexion.CommandType = CommandType.Text;
+                cnnConexion.ActiveConnection = true;
+
+                SqlDataReader sqlRecord = cnnConexion.ExecuteDataReader(query);
+
+                return sqlRecord;
+            }
+            catch (Exception)
+            {
+                return null;
+                throw;
+            }
+        }
     }
+
+
 }

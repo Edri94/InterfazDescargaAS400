@@ -8,6 +8,8 @@ namespace Consumir_InterfazDescargaAS400
 {
     static class Program
     {
+        static Form1 form;
+
         /// <summary>
         /// Punto de entrada principal para la aplicación.
         /// </summary>
@@ -16,7 +18,14 @@ namespace Consumir_InterfazDescargaAS400
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            form = new Form1();
+            Application.Run(form);       
+        }
+
+        public static void cerrar(bool cerrar)
+        {
+            form.Close();
+            Application.Exit();
         }
     }
 }

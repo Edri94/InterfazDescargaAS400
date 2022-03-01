@@ -3,3 +3,4 @@ C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\bin\De
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\obj\Debug\InterfazDescargaAS400.csproj.CoreCompileInputs.cache
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\obj\Debug\InterfazDescargaAS400.dll
 C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\obj\Debug\InterfazDescargaAS400.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\InterfazDescargaAS400\obj\Debug\InterfazDescargaAS400.csproj.AssemblyReference.cache

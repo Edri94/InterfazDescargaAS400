@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InterfazDescargaAS400.Data
@@ -20,6 +21,7 @@ namespace InterfazDescargaAS400.Data
         FuncionesBd bd;
         Encriptacion encriptacion;
         List<String> querys;
+        List<Hold_EQTKT> holds; //[prueba];
 
         String equipo;
         String libreria;
@@ -52,6 +54,7 @@ namespace InterfazDescargaAS400.Data
             this.limites = new List<DiccionarioDatos>();
             this.encriptacion = new Encriptacion();
             this.querys = new List<string>();
+            this.holds = new List<Hold_EQTKT>(); //[prueba]
             Log.EscribeLog = (Funcion.getValueAppConfig("Escribe", "LOG") == "Si") ? true : false;
 
             equipo = encriptacion.Decrypt(Funcion.getValueAppConfig("Equipo", "AS400"));
@@ -78,7 +81,7 @@ namespace InterfazDescargaAS400.Data
 
             String nombreArchivoDtf = this.PathModelos + this.ArchivoDTF;
             String nombreArchivoDtfDestino = this.PathTransfer + "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".DTF";
-            String archivoDtfDestino =  "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".DTF";
+            String archivoDtfDestino = "JUPFHolds" + DateTime.Now.ToString("yyMMdd") + ".DTF";
 
 
             String nombreArchivoFDF = this.PathModelos + this.ArchivoFDF;
@@ -94,11 +97,29 @@ namespace InterfazDescargaAS400.Data
             Funcion.SetParameterTransfer("FDFFile", nombreArchivoFDFDestino, archivoDtfDestino, this.PathTransfer);
             Funcion.SetParameterTransfer("PCFile", this.archivo_holds, archivoDtfDestino, this.PathTransfer);
 
-            //lnAnswer = Shell(Trim(msPathFTPApp) & "\cwbtf.exe " & Trim(nombreArchivoDttDestino))
+          
+            ejecutaTransfer(nombreArchivoDtfDestino);
 
-            string command = $"/C {client_access}cwbtf.exe {nombreArchivoDtfDestino}";
-            Process.Start("cmd.exe", command);
+        }
 
+        private void ejecutaTransfer(string nombreArchivoDtfDestino)
+        {
+            try
+            {
+                Process p = new Process();
+                p.EnableRaisingEvents = false;
+                p.StartInfo.FileName = $"{client_access}cwbtf.exe";
+                p.StartInfo.Arguments = nombreArchivoDtfDestino;
+                p.StartInfo.CreateNoWindow = false;
+                p.Start();
+                p.WaitForExit();
+
+            }
+            catch (Exception ex)
+            {
+                Log.Escribe("Error al abrir el ejecutable ", "Error");
+                Log.Escribe(ex);
+            }
         }
 
         public string LeerArchivo()
@@ -123,23 +144,28 @@ namespace InterfazDescargaAS400.Data
 
                         while (line != null)
                         {
-                            if(line.Length < 232)
+                            //Sin LINQ
+                            if (line.Length < 232)
                             {
                                 break;
                             }
-                            if (line.Substring(4, 1) != "9" && line.Substring(4, 1) != "8")
+
+                            if (line.Substring(4, 1) != "9" && line.Substring(4, 1) != "8" && (line.Substring(49, 3).Contains("CBP") == false && (line.Substring(49, 3).Contains("CBS") == false)))
                             {
-                                querys.Add(ArmaQueryInsert(line, c));                             
+                                querys.Add(ArmaQueryInsert(line, c));
                             }
-                            line = sr.ReadLine();  
-                           
+
+                            ////[prueba] para hacer LIINQ
+                            //holds.Add(SeparaDatos(line, c));
+
+                            line = sr.ReadLine();
                             c++;
 
                         }
                         sr.Close();
                     }
                 }
-                if(this.ConectDB())
+                if(this.ConectDB() && c > 1)
                 {
                     bd.transaccionInsert(querys);
                 }
@@ -167,7 +193,7 @@ namespace InterfazDescargaAS400.Data
             try
             {
                 foreach (DiccionarioDatos diccionario in limites)
-                {       
+                {                        
                     if (diccionario.TipoDato == "varchar")
                     {                     
                         if (c == (limites.Count - 1))
@@ -186,7 +212,7 @@ namespace InterfazDescargaAS400.Data
                             if (diccionario.Etiqueta == "START_DATE" || diccionario.Etiqueta == "EXPIRY_DATE")
                             {
                                 fecha_out = line.Substring(start_index, diccionario.Posicion);
-                                fecha_out = "20" + fecha_out.Substring(1,2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);                              
                                 query_values += " '" + fecha_out + "',";
                             }
                             else
@@ -200,7 +226,7 @@ namespace InterfazDescargaAS400.Data
                         if (c == (limites.Count - 1))
                         {
                             query_etiquetas += diccionario.Etiqueta;
-                            query_values += " '" + line.Substring(start_index, diccionario.Posicion);
+                            query_values += line.Substring(start_index, diccionario.Posicion);
                         }
                         else
                         {
@@ -213,12 +239,23 @@ namespace InterfazDescargaAS400.Data
                         if (c == (limites.Count -1))
                         {
                             query_etiquetas += diccionario.Etiqueta;
-                            query_values += " '" + line.Substring(start_index, diccionario.Posicion);
+                            query_values += line.Substring(start_index, diccionario.Posicion);
                         }
                         else
                         {
-                            query_etiquetas += diccionario.Etiqueta + ",";
-                            query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
+                            if (diccionario.Etiqueta == "AMOUNT")
+                            {
+                                
+                                query_etiquetas += diccionario.Etiqueta + ",";
+                                float valorA = Int32.Parse(line.Substring(start_index, diccionario.Posicion));
+                                float valorB = valorA / 100;
+                                query_values += " " + valorB.ToString() + ",";
+                            }
+                            else
+                            {
+                                query_etiquetas += diccionario.Etiqueta + ",";
+                                query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
+                            } 
                         }
                     }
                     c++;
@@ -240,6 +277,104 @@ namespace InterfazDescargaAS400.Data
 
         }
 
+
+        //[prueba]
+        private Hold_EQTKT SeparaDatos(string line, int contador)
+        {
+            int start_index = 0, c = 0;
+            String query_completo = "", query_etiquetas = "", query_values = "";
+            Hold_EQTKT hold_EQTKT = new Hold_EQTKT();
+            String fecha_out ="";
+
+            query_completo = "INSERT INTO TMP_HOLDS_EQTKT";
+
+            try
+            {
+                foreach (DiccionarioDatos diccionario in limites)
+                {                        
+                    if (diccionario.TipoDato == "varchar")
+                    {                     
+                        if (c == (limites.Count - 1))
+                        {
+                            query_etiquetas += diccionario.Etiqueta;
+                            //query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "'";
+
+                            fecha_out = line.Substring(start_index, diccionario.Posicion);
+                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            query_values += " '" + fecha_out + "'";
+                        }
+                        else
+                        {
+                            query_etiquetas += diccionario.Etiqueta + ",";
+
+                            if (diccionario.Etiqueta == "START_DATE" || diccionario.Etiqueta == "EXPIRY_DATE")
+                            {
+                                fecha_out = line.Substring(start_index, diccionario.Posicion);
+                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);                              
+                                query_values += " '" + fecha_out + "',";
+                            }
+                            else
+                            {                           
+                                query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "',";
+                            }                                                   
+                        }                                          
+                    }
+                    else if (diccionario.TipoDato == "int")
+                    {
+                        if (c == (limites.Count - 1))
+                        {
+                            query_etiquetas += diccionario.Etiqueta;
+                            query_values += line.Substring(start_index, diccionario.Posicion);
+                        }
+                        else
+                        {
+                            query_etiquetas += diccionario.Etiqueta + ",";
+                            query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
+                        }
+                    }
+                    else if (diccionario.TipoDato == "numeric")
+                    {
+                        if (c == (limites.Count -1))
+                        {
+                            query_etiquetas += diccionario.Etiqueta;
+                            query_values += line.Substring(start_index, diccionario.Posicion);
+                        }
+                        else
+                        {
+                            if (diccionario.Etiqueta == "AMOUNT")
+                            {
+                                
+                                query_etiquetas += diccionario.Etiqueta + ",";
+                                float valorA = Int32.Parse(line.Substring(start_index, diccionario.Posicion));
+                                float valorB = valorA / 100;
+                                query_values += " " + valorB.ToString() + ",";
+                            }
+                            else
+                            {
+                                query_etiquetas += diccionario.Etiqueta + ",";
+                                query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
+                            } 
+                        }
+                    }
+                    c++;
+                    start_index += diccionario.Posicion;
+                   
+                }
+
+                query_completo += "(" + query_etiquetas + ") VALUES(" + query_values + ")";
+                //Log.Escribe(query_completo, "Query Insertar:");
+
+            }
+            
+            catch (Exception ex)
+            {
+                Log.Escribe(ex);
+            }
+
+            return new Hold_EQTKT { };
+
+        }
+
         public bool ExisteArchivo()
         {
             bool existe;
@@ -250,6 +385,7 @@ namespace InterfazDescargaAS400.Data
             }
             catch (Exception ex)
             {
+                Log.Escribe("Error al encontrar el archivo: " + this.archivo_holds);
                 Log.Escribe(ex);
                 existe = false;
             }

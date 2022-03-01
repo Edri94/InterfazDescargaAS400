@@ -19,11 +19,12 @@ namespace Consumir_InterfazDescargaAS400
         
         public Form1()
         {
-            InitializeComponent();
+            InitializeComponent();  
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {         
+        {
+            this.Hide();
             ArchivoTexto archivo = new ArchivoTexto();
             archivo.LeerArchivo();
         }
@@ -80,7 +81,11 @@ namespace Consumir_InterfazDescargaAS400
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            rbEncriptar.Checked = true;
+            //this.Show();
+            //rbEncriptar.Checked = true;
+            //ArchivoTexto archivo = new ArchivoTexto();
+            //archivo.LeerArchivo();
+            //Program.cerrar(true);
         }
 
       
