@@ -14,7 +14,7 @@ namespace InterfazDescargaAS400.Models
         public int HOLD_NO { get; set; }
         public String START_DATE { get; set; }
         public String EXPIRY_DATE { get; set; }
-        public decimal AMOUNT { get; set; }
+        public float AMOUNT { get; set; }
         public String RESP_CODE { get; set; }
         public String REASON_CODE { get; set; }
         public String DSC_LINE1 { get; set; }

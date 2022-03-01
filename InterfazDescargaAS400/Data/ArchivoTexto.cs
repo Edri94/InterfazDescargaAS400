@@ -2,13 +2,10 @@
 using InterfazDescargaAS400.Models;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace InterfazDescargaAS400.Data
 {
@@ -47,6 +44,7 @@ namespace InterfazDescargaAS400.Data
         String ArchivoDTF;
 
 
+
         public ArchivoTexto()
         {
             this.path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location); 
@@ -74,6 +72,9 @@ namespace InterfazDescargaAS400.Data
             this.ConectDB();
         }
 
+        /// <summary>
+        /// Copia archivos de una carpeta a otra
+        /// </summary>
         private void descargaArchivoHolds()
         {
             this.archivo_as400 = this.archivo_as400.Replace("dd", DateTime.Now.ToString("dd"));
@@ -102,6 +103,10 @@ namespace InterfazDescargaAS400.Data
 
         }
 
+        /// <summary>
+        /// Ejecuta programa desde la ocnsola epserando que tenga exito
+        /// </summary>
+        /// <param name="nombreArchivoDtfDestino"></param>
         private void ejecutaTransfer(string nombreArchivoDtfDestino)
         {
             try
@@ -122,6 +127,10 @@ namespace InterfazDescargaAS400.Data
             }
         }
 
+        /// <summary>
+        /// lee el archivo linea por linea, esta funcion es el nucleo de todo
+        /// </summary>
+        /// <returns></returns>
         public string LeerArchivo()
         {
             String line;
@@ -144,32 +153,36 @@ namespace InterfazDescargaAS400.Data
 
                         while (line != null)
                         {
-                            //Sin LINQ
-                            if (line.Length < 232)
-                            {
-                                break;
-                            }
-
-                            if (line.Substring(4, 1) != "9" && line.Substring(4, 1) != "8" && (line.Substring(49, 3).Contains("CBP") == false && (line.Substring(49, 3).Contains("CBS") == false)))
-                            {
-                                querys.Add(ArmaQueryInsert(line, c));
-                            }
-
-                            ////[prueba] para hacer LIINQ
-                            //holds.Add(SeparaDatos(line, c));
+                            //[prueba] para hacer LIINQ
+                            holds.Add(SeparaDatos(line, c));
 
                             line = sr.ReadLine();
                             c++;
-
                         }
+
+                        List<Hold_EQTKT> lista_holds = new List<Hold_EQTKT>();
+                        lista_holds = rellenarLista(holds);
+
+                        List<Hold_EQTKT> resultados = (
+                            from
+                                h in lista_holds
+                            where
+                                (!h.RESP_CODE.Contains("CBP") && !h.RESP_CODE.Contains("CBS"))
+                                &&
+                                (!h.ACCOUNT.StartsWith("9") && !h.ACCOUNT.StartsWith("8"))
+                            select
+                                h
+                        ).ToList();
+
+                        if (this.ConectDB() && c > 1)
+                        {
+                            bd.transaccionInsert(ArmaQuerys(resultados));
+                        }
+
                         sr.Close();
                     }
                 }
-                if(this.ConectDB() && c > 1)
-                {
-                    bd.transaccionInsert(querys);
-                }
-                
+    
             }
             catch(Exception ex)
             {
@@ -181,188 +194,90 @@ namespace InterfazDescargaAS400.Data
             return lines;
         }
 
-        private string ArmaQueryInsert(string line, int contador)
+        /// <summary>
+        /// Crea los query insert a partir de una lista de objetos Hold_EQTKT
+        /// </summary>
+        /// <param name="lista_holds"></param>
+        /// <returns></returns>
+        private List<string> ArmaQuerys(List<Hold_EQTKT> lista_holds)
         {
-            int start_index = 0, c = 0;
-            String query_completo = "", query_etiquetas = "", query_values = "";
-            Hold_EQTKT hold_EQTKT = new Hold_EQTKT();
-            String fecha_out ="";
+            List<string> inserts = new List<string>();
+            String query_completo = "";
 
-            query_completo = "INSERT INTO TMP_HOLDS_EQTKT";
-
-            try
+            foreach (Hold_EQTKT h in lista_holds)
             {
-                foreach (DiccionarioDatos diccionario in limites)
-                {                        
-                    if (diccionario.TipoDato == "varchar")
-                    {                     
-                        if (c == (limites.Count - 1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            //query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "'";
+                query_completo = $"" +
+                    $"INSERT INTO TMP_HOLDS_EQTKT" +
+                    $"(CD_BRANCH,ACCOUNT,SUFIX,HOLD_NO,START_DATE,EXPIRY_DATE,AMOUNT,RESP_CODE,REASON_CODE,DSC_LINE1,DSC_LINE2,DSC_LINE3,DSC_LINE4,INPUT_DATE)" +
+                    $"VALUES" +
+                    $"( '{h.CD_BRANCH}', '{h.ACCOUNT}', '{h.SUFIX}', {h.HOLD_NO}, '{h.START_DATE}', '{h.EXPIRY_DATE}', {h.AMOUNT}, '{h.RESP_CODE}', '{h.REASON_CODE}', '{h.DSC_LINE1}', '{h.DSC_LINE2}', '{h.DSC_LINE3}', '{h.DSC_LINE4}', '{h.INPUT_DATE}')";
 
-                            fecha_out = line.Substring(start_index, diccionario.Posicion);
-                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
-                            query_values += " '" + fecha_out + "'";
-                        }
-                        else
-                        {
-                            query_etiquetas += diccionario.Etiqueta + ",";
-
-                            if (diccionario.Etiqueta == "START_DATE" || diccionario.Etiqueta == "EXPIRY_DATE")
-                            {
-                                fecha_out = line.Substring(start_index, diccionario.Posicion);
-                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);                              
-                                query_values += " '" + fecha_out + "',";
-                            }
-                            else
-                            {                           
-                                query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "',";
-                            }                                                   
-                        }                                          
-                    }
-                    else if (diccionario.TipoDato == "int")
-                    {
-                        if (c == (limites.Count - 1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            query_values += line.Substring(start_index, diccionario.Posicion);
-                        }
-                        else
-                        {
-                            query_etiquetas += diccionario.Etiqueta + ",";
-                            query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
-                        }
-                    }
-                    else if (diccionario.TipoDato == "numeric")
-                    {
-                        if (c == (limites.Count -1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            query_values += line.Substring(start_index, diccionario.Posicion);
-                        }
-                        else
-                        {
-                            if (diccionario.Etiqueta == "AMOUNT")
-                            {
-                                
-                                query_etiquetas += diccionario.Etiqueta + ",";
-                                float valorA = Int32.Parse(line.Substring(start_index, diccionario.Posicion));
-                                float valorB = valorA / 100;
-                                query_values += " " + valorB.ToString() + ",";
-                            }
-                            else
-                            {
-                                query_etiquetas += diccionario.Etiqueta + ",";
-                                query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
-                            } 
-                        }
-                    }
-                    c++;
-                    start_index += diccionario.Posicion;
-                   
-                }
-
-                query_completo += "(" + query_etiquetas + ") VALUES(" + query_values + ")";
-                //Log.Escribe(query_completo, "Query Insertar:");
-
-            }
-            
-            catch (Exception ex)
-            {
-                Log.Escribe(ex);
+                inserts.Add(query_completo);
             }
 
-            return query_completo;
-
+            return inserts;
         }
 
 
-        //[prueba]
+        /// <summary>
+        /// Separa una cadena de texto en un objeto de tipo Hold_EQTKT
+        /// </summary>
+        /// <param name="line">cadena con datos tabulados</param>
+        /// <param name="contador">numero de linea, no sirve de nada pero ahi lo dejo</param>
+        /// <returns></returns>
         private Hold_EQTKT SeparaDatos(string line, int contador)
         {
             int start_index = 0, c = 0;
-            String query_completo = "", query_etiquetas = "", query_values = "";
             Hold_EQTKT hold_EQTKT = new Hold_EQTKT();
-            String fecha_out ="";
+            string fecha_out = "";
 
-            query_completo = "INSERT INTO TMP_HOLDS_EQTKT";
 
             try
             {
                 foreach (DiccionarioDatos diccionario in limites)
-                {                        
-                    if (diccionario.TipoDato == "varchar")
-                    {                     
-                        if (c == (limites.Count - 1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            //query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "'";
-
+                {               
+                    switch(diccionario.Etiqueta)
+                    {
+                        case "CD_BRANCH": hold_EQTKT.CD_BRANCH = line.Substring(start_index, diccionario.Posicion); break;
+                        case "ACCOUNT":                            
+                            hold_EQTKT.ACCOUNT = line.Substring(start_index, diccionario.Posicion).Trim();
+                            hold_EQTKT.ACCOUNT = (hold_EQTKT.ACCOUNT == "") ? "XXX" : hold_EQTKT.ACCOUNT;
+                            break;                                             
+                        case "SUFIX":hold_EQTKT.SUFIX = line.Substring(start_index, diccionario.Posicion); break;
+                        case "HOLD_NO": hold_EQTKT.HOLD_NO = Int32.Parse(line.Substring(start_index, diccionario.Posicion)); break;
+                        case "START_DATE":
                             fecha_out = line.Substring(start_index, diccionario.Posicion);
                             fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
-                            query_values += " '" + fecha_out + "'";
-                        }
-                        else
-                        {
-                            query_etiquetas += diccionario.Etiqueta + ",";
-
-                            if (diccionario.Etiqueta == "START_DATE" || diccionario.Etiqueta == "EXPIRY_DATE")
-                            {
-                                fecha_out = line.Substring(start_index, diccionario.Posicion);
-                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);                              
-                                query_values += " '" + fecha_out + "',";
-                            }
-                            else
-                            {                           
-                                query_values += " '" + line.Substring(start_index, diccionario.Posicion) + "',";
-                            }                                                   
-                        }                                          
-                    }
-                    else if (diccionario.TipoDato == "int")
-                    {
-                        if (c == (limites.Count - 1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            query_values += line.Substring(start_index, diccionario.Posicion);
-                        }
-                        else
-                        {
-                            query_etiquetas += diccionario.Etiqueta + ",";
-                            query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
-                        }
-                    }
-                    else if (diccionario.TipoDato == "numeric")
-                    {
-                        if (c == (limites.Count -1))
-                        {
-                            query_etiquetas += diccionario.Etiqueta;
-                            query_values += line.Substring(start_index, diccionario.Posicion);
-                        }
-                        else
-                        {
-                            if (diccionario.Etiqueta == "AMOUNT")
-                            {
-                                
-                                query_etiquetas += diccionario.Etiqueta + ",";
-                                float valorA = Int32.Parse(line.Substring(start_index, diccionario.Posicion));
-                                float valorB = valorA / 100;
-                                query_values += " " + valorB.ToString() + ",";
-                            }
-                            else
-                            {
-                                query_etiquetas += diccionario.Etiqueta + ",";
-                                query_values += " " + line.Substring(start_index, diccionario.Posicion) + ",";
-                            } 
-                        }
-                    }
+                            hold_EQTKT.START_DATE = fecha_out; 
+                            break;
+                        case "EXPIRY_DATE":
+                            fecha_out = line.Substring(start_index, diccionario.Posicion);
+                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            hold_EQTKT.EXPIRY_DATE = fecha_out;
+                            break;
+                        case "AMOUNT":
+                            float valorA = Int32.Parse(line.Substring(start_index, diccionario.Posicion));
+                            float valorB = valorA / 100;
+                            hold_EQTKT.AMOUNT = valorB;
+                            break;
+                        case "RESP_CODE":
+                            hold_EQTKT.RESP_CODE = line.Substring(start_index, diccionario.Posicion).Trim();
+                            hold_EQTKT.RESP_CODE = (hold_EQTKT.RESP_CODE == "") ? "XXX" : hold_EQTKT.RESP_CODE;
+                            break;
+                        case "REASON_CODE": hold_EQTKT.REASON_CODE = line.Substring(start_index, diccionario.Posicion); break;
+                        case "DSC_LINE1": hold_EQTKT.DSC_LINE1 = line.Substring(start_index, diccionario.Posicion); break;
+                        case "DSC_LINE2": hold_EQTKT.DSC_LINE2 = line.Substring(start_index, diccionario.Posicion); break;
+                        case "DSC_LINE3": hold_EQTKT.DSC_LINE3 = line.Substring(start_index, diccionario.Posicion); break;
+                        case "DSC_LINE4": hold_EQTKT.DSC_LINE4 = line.Substring(start_index, diccionario.Posicion); break;
+                        case "INPUT_DATE":
+                            fecha_out = line.Substring(start_index, diccionario.Posicion);
+                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            hold_EQTKT.INPUT_DATE = fecha_out;
+                            break;
+                    }                                  
                     c++;
-                    start_index += diccionario.Posicion;
-                   
+                    start_index += diccionario.Posicion;             
                 }
-
-                query_completo += "(" + query_etiquetas + ") VALUES(" + query_values + ")";
-                //Log.Escribe(query_completo, "Query Insertar:");
 
             }
             
@@ -371,10 +286,34 @@ namespace InterfazDescargaAS400.Data
                 Log.Escribe(ex);
             }
 
-            return new Hold_EQTKT { };
+            return hold_EQTKT;
 
         }
 
+       /// <summary>
+       /// Metodo parad devolver una lista sin nulos
+       /// </summary>
+       /// <param name="lista"> lista con valores nulos</param>
+       /// <returns></returns>
+        public List<Hold_EQTKT> rellenarLista(List<Hold_EQTKT> lista)
+        {
+            List<Hold_EQTKT> lista_hold = new List<Hold_EQTKT>();
+
+            foreach(Hold_EQTKT h in lista)
+            {
+                if(h.CD_BRANCH != null)
+                {
+                    lista_hold.Add(h);
+                }
+            }
+
+            return lista_hold;
+        }
+
+        /// <summary>
+        /// Verifica si existe un archivo 
+        /// </summary>
+        /// <returns></returns>
         public bool ExisteArchivo()
         {
             bool existe;
@@ -393,6 +332,9 @@ namespace InterfazDescargaAS400.Data
             return existe;
         }
 
+        /// <summary>
+        /// Obtiene los limites establecidos en ell app.config
+        /// </summary>
         public void EstablecerLimites()
         {
             int num_limites = Int32.Parse(Funcion.getValueAppConfig("limites", "parametro"));
@@ -404,6 +346,10 @@ namespace InterfazDescargaAS400.Data
             }
         }
 
+        /// <summary>
+        /// Conectarse a la base de datosf
+        /// </summary>
+        /// <returns></returns>
         public bool ConectDB()
         {
             bool ConectDB = false;
