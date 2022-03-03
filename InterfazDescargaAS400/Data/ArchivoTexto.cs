@@ -43,6 +43,8 @@ namespace InterfazDescargaAS400.Data
         String ArchivoFDF;
         String ArchivoDTF;
 
+        bool paso1, paso2, paso3;
+
 
 
         public ArchivoTexto()
@@ -67,7 +69,15 @@ namespace InterfazDescargaAS400.Data
             PathDatos = Funcion.getValueAppConfig("PathDatos", "RUTAS");
             ArchivoFDF = Funcion.getValueAppConfig("ArchivoFDF", "RUTAS");
             ArchivoDTF = Funcion.getValueAppConfig("ArchivoDTF", "RUTAS");
+
+            paso1 = (Funcion.getValueAppConfig("1", "paso") == "1") ? true : false;
+            paso2 = (Funcion.getValueAppConfig("2", "paso") == "1") ? true : false;
+            paso3 = (Funcion.getValueAppConfig("3", "paso") == "1") ? true : false;
+            
+          
             descargaArchivoHolds();
+            
+            
 
             this.ConectDB();
         }
@@ -98,8 +108,10 @@ namespace InterfazDescargaAS400.Data
             Funcion.SetParameterTransfer("FDFFile", nombreArchivoFDFDestino, archivoDtfDestino, this.PathTransfer);
             Funcion.SetParameterTransfer("PCFile", this.archivo_holds, archivoDtfDestino, this.PathTransfer);
 
-          
-            ejecutaTransfer(nombreArchivoDtfDestino);
+            if (paso1)
+            {
+                ejecutaTransfer(nombreArchivoDtfDestino);
+            }
 
         }
 
@@ -140,46 +152,51 @@ namespace InterfazDescargaAS400.Data
 
             try
             {
-                if (this.ExisteArchivo())
+                if (paso2)
                 {
-                    this.EstablecerLimites();
-                   
-                    StreamReader sr = new StreamReader(this.archivo_holds);
-                    line = sr.ReadLine();
-
-                    if (this.conectado)
+                    if (this.ExisteArchivo())
                     {
-                        bd.ejecutarDelete("delete from TMP_HOLDS_EQTKT where 1 = 1");
+                        this.EstablecerLimites();
 
-                        while (line != null)
+                        StreamReader sr = new StreamReader(this.archivo_holds);
+                        line = sr.ReadLine();
+
+                        if (this.conectado)
                         {
-                            //[prueba] para hacer LIINQ
-                            holds.Add(SeparaDatos(line, c));
+                            bd.ejecutarDelete("delete from TMP_HOLDS_EQTKT where 1 = 1");
 
-                            line = sr.ReadLine();
-                            c++;
+                            while (line != null)
+                            {
+                                //[prueba] para hacer LIINQ
+                                if (line.Length >= 232)
+                                {
+                                    holds.Add(SeparaDatos(line, c));
+                                }
+                                line = sr.ReadLine();
+                                c++;
+                            }
+
+                            List<Hold_EQTKT> lista_holds = new List<Hold_EQTKT>();
+                            lista_holds = rellenarLista(holds);
+
+                            List<Hold_EQTKT> resultados = (
+                                from
+                                    h in lista_holds
+                                where
+                                    (h.RESP_CODE.Contains("CBP") || h.RESP_CODE.Contains("CBS"))
+                                    &&
+                                    (!h.ACCOUNT.StartsWith("9") && !h.ACCOUNT.StartsWith("8"))
+                                select
+                                    h
+                            ).ToList();
+
+                            if (this.ConectDB() && c > 1)
+                            {
+                                bd.transaccionInsert(ArmaQuerys(resultados));
+                            }
+
+                            sr.Close();
                         }
-
-                        List<Hold_EQTKT> lista_holds = new List<Hold_EQTKT>();
-                        lista_holds = rellenarLista(holds);
-
-                        List<Hold_EQTKT> resultados = (
-                            from
-                                h in lista_holds
-                            where
-                                (!h.RESP_CODE.Contains("CBP") && !h.RESP_CODE.Contains("CBS"))
-                                &&
-                                (!h.ACCOUNT.StartsWith("9") && !h.ACCOUNT.StartsWith("8"))
-                            select
-                                h
-                        ).ToList();
-
-                        if (this.ConectDB() && c > 1)
-                        {
-                            bd.transaccionInsert(ArmaQuerys(resultados));
-                        }
-
-                        sr.Close();
                     }
                 }
     
@@ -233,26 +250,40 @@ namespace InterfazDescargaAS400.Data
 
 
             try
-            {
+            {              
                 foreach (DiccionarioDatos diccionario in limites)
-                {               
-                    switch(diccionario.Etiqueta)
+                {
+                    switch (diccionario.Etiqueta)
                     {
                         case "CD_BRANCH": hold_EQTKT.CD_BRANCH = line.Substring(start_index, diccionario.Posicion); break;
-                        case "ACCOUNT":                            
-                            hold_EQTKT.ACCOUNT = line.Substring(start_index, diccionario.Posicion).Trim();
+                        case "ACCOUNT":
+                            hold_EQTKT.ACCOUNT = line.Substring(start_index, diccionario.Posicion);
                             hold_EQTKT.ACCOUNT = (hold_EQTKT.ACCOUNT == "") ? "XXX" : hold_EQTKT.ACCOUNT;
-                            break;                                             
-                        case "SUFIX":hold_EQTKT.SUFIX = line.Substring(start_index, diccionario.Posicion); break;
+                            break;
+                        case "SUFIX": hold_EQTKT.SUFIX = line.Substring(start_index, diccionario.Posicion); break;
                         case "HOLD_NO": hold_EQTKT.HOLD_NO = Int32.Parse(line.Substring(start_index, diccionario.Posicion)); break;
                         case "START_DATE":
-                            fecha_out = line.Substring(start_index, diccionario.Posicion);
-                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
-                            hold_EQTKT.START_DATE = fecha_out; 
+                            fecha_out = line.Substring(start_index, diccionario.Posicion).Trim();
+                            if (hold_EQTKT.ACCOUNT.StartsWith("9") || hold_EQTKT.ACCOUNT.StartsWith("8"))
+                            {
+                                fecha_out = "19" + fecha_out.Substring(0, 2) + "-" + fecha_out.Substring(2, 2) + "-" + fecha_out.Substring(4, 2);    
+                            }
+                            else
+                            {
+                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            }
+                            hold_EQTKT.START_DATE = fecha_out;
                             break;
                         case "EXPIRY_DATE":
-                            fecha_out = line.Substring(start_index, diccionario.Posicion);
-                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            fecha_out = line.Substring(start_index, diccionario.Posicion).Trim();
+                            if (hold_EQTKT.ACCOUNT.StartsWith("9") || hold_EQTKT.ACCOUNT.StartsWith("8"))
+                            {
+                                fecha_out = "19" + fecha_out.Substring(0, 2) + "-" + fecha_out.Substring(2, 2) + "-" + fecha_out.Substring(4, 2);                             
+                            }
+                            else
+                            {
+                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            }
                             hold_EQTKT.EXPIRY_DATE = fecha_out;
                             break;
                         case "AMOUNT":
@@ -261,7 +292,7 @@ namespace InterfazDescargaAS400.Data
                             hold_EQTKT.AMOUNT = valorB;
                             break;
                         case "RESP_CODE":
-                            hold_EQTKT.RESP_CODE = line.Substring(start_index, diccionario.Posicion).Trim();
+                            hold_EQTKT.RESP_CODE = line.Substring(start_index, diccionario.Posicion);
                             hold_EQTKT.RESP_CODE = (hold_EQTKT.RESP_CODE == "") ? "XXX" : hold_EQTKT.RESP_CODE;
                             break;
                         case "REASON_CODE": hold_EQTKT.REASON_CODE = line.Substring(start_index, diccionario.Posicion); break;
@@ -270,8 +301,15 @@ namespace InterfazDescargaAS400.Data
                         case "DSC_LINE3": hold_EQTKT.DSC_LINE3 = line.Substring(start_index, diccionario.Posicion); break;
                         case "DSC_LINE4": hold_EQTKT.DSC_LINE4 = line.Substring(start_index, diccionario.Posicion); break;
                         case "INPUT_DATE":
-                            fecha_out = line.Substring(start_index, diccionario.Posicion);
-                            fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            fecha_out = line.Substring(start_index, diccionario.Posicion).Trim();
+                            if (hold_EQTKT.ACCOUNT.StartsWith("9") || hold_EQTKT.ACCOUNT.StartsWith("8"))
+                            {
+                                fecha_out = "19" + fecha_out.Substring(0, 2) + "-" + fecha_out.Substring(2, 2) + "-" + fecha_out.Substring(4, 2);
+                            }
+                            else
+                            {
+                                fecha_out = "20" + fecha_out.Substring(1, 2) + "-" + fecha_out.Substring(3, 2) + "-" + fecha_out.Substring(5, 2);
+                            }
                             hold_EQTKT.INPUT_DATE = fecha_out;
                             break;
                     }                                  
@@ -283,6 +321,7 @@ namespace InterfazDescargaAS400.Data
             
             catch (Exception ex)
             {
+                Log.Escribe($"Error en linea: [{contador}] {line}");
                 Log.Escribe(ex);
             }
 
@@ -301,10 +340,11 @@ namespace InterfazDescargaAS400.Data
 
             foreach(Hold_EQTKT h in lista)
             {
-                if(h.CD_BRANCH != null)
+                if(h.CD_BRANCH != null && h.RESP_CODE != null)
                 {
                     lista_hold.Add(h);
                 }
+
             }
 
             return lista_hold;

@@ -1,0 +1,13 @@
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\bin\Release\paso-3.exe.config
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\bin\Release\paso-3.exe
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\bin\Release\paso-3.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\bin\Release\InterfazDescargaAS400.dll
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\bin\Release\InterfazDescargaAS400.pdb
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.csproj.AssemblyReference.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso_3.Form1.resources
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso_3.Properties.Resources.resources
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.csproj.GenerateResource.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.csproj.CoreCompileInputs.cache
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.csproj.CopyComplete
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.exe
+C:\Users\MI05332\source\repos\InterfazDescargaAS400\paso-3\obj\Release\paso-3.pdb
